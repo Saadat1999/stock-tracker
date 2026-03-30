@@ -1,0 +1,3 @@
+2026-03-30 14:18:54.578917+04:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "FAVORITE_STOCK" not found; SQL statement:
+DELETE FROM FAVORITE_STOCK WHERE SYMBOL = 'IBM' [42102-240]

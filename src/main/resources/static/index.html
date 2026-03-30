@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AlphaStocks</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-mark">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 18 18" fill="none">
+                        <polyline points="1,14 5,9 8,11 12,5 17,7" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="logo-name">AlphaStocks</div>
+                    <div class="logo-sub">Market tracker</div>
+                </div>
+            </div>
+        </div>
+
+        <nav class="nav">
+            <button class="nav-item active" data-page="dashboard">
+                <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="9" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="1" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="9" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.4"/></svg>
+                Dashboard
+            </button>
+            <button class="nav-item" data-page="history">
+                <svg viewBox="0 0 16 16" fill="none"><polyline points="1,12 4,7 7,9 10,4 15,6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><line x1="1" y1="14" x2="15" y2="14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                History
+            </button>
+            <button class="nav-item" data-page="overview">
+                <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4"/><line x1="8" y1="5" x2="8" y2="8.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="11" r="0.7" fill="currentColor"/></svg>
+                Overview
+            </button>
+            <button class="nav-item" data-page="favorites">
+                <svg viewBox="0 0 16 16" fill="none"><polygon points="8,1.5 9.8,6.2 15,6.2 10.6,9.3 12.4,14 8,11 3.6,14 5.4,9.3 1,6.2 6.2,6.2" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+                Favorites
+                <span class="nav-badge" id="fav-badge">0</span>
+            </button>
+        </nav>
+
+        <div class="sidebar-footer">
+            <p>Running on port 8082</p>
+            <p style="margin-top:4px;">Alpha Vantage API</p>
+        </div>
+    </aside>
+
+    <!-- ── Pages ── -->
+    <div class="main">
+
+        <!-- Dashboard -->
+        <div class="page active" id="page-dashboard">
+            <div class="topbar">
+                <div>
+                    <div class="topbar-title">Dashboard</div>
+                    <div class="topbar-sub">Quote · High · Low snapshot</div>
+                </div>
+            </div>
+            <div class="search-row">
+                <div class="search-input-wrap">
+                    <span class="search-ticker">TICKER</span>
+                    <input id="dash-symbol" class="search-input" type="text" maxlength="10" placeholder="AAPL" autocomplete="off">
+                </div>
+                <button class="btn btn-primary" id="dash-load-btn">Load stock</button>
+            </div>
+            <div class="status" id="dash-status">
+                <span class="status-dot"></span>Enter a ticker symbol to load data.
+            </div>
+            <div class="content">
+                <div class="metrics-row">
+                    <div class="metric-card current">
+                        <div class="metric-label">Current price</div>
+                        <div class="metric-symbol" id="dash-symbol-label">—</div>
+                        <div class="metric-value" id="dash-price">—</div>
+                        <div class="metric-note" id="dash-trading-day">No symbol loaded</div>
+                    </div>
+                    <div class="metric-card high">
+                        <div class="metric-label">30-day high</div>
+                        <div class="metric-value up" id="dash-high">—</div>
+                        <div class="metric-note" id="dash-high-date">History required</div>
+                    </div>
+                    <div class="metric-card low">
+                        <div class="metric-label">30-day low</div>
+                        <div class="metric-value down" id="dash-low">—</div>
+                        <div class="metric-note" id="dash-low-date">History required</div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-head">
+                        <div>
+                            <div class="panel-title">Price range chart</div>
+                            <div class="panel-sub">30 trading sessions</div>
+                        </div>
+                        <span class="badge" id="dash-chart-badge">No data</span>
+                    </div>
+                    <div class="chart-shell">
+                        <svg id="history-chart" viewBox="0 0 600 140" preserveAspectRatio="none" aria-label="Price chart">
+                            <defs>
+                                <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stop-color="#00e5a0" stop-opacity="0.25"/>
+                                    <stop offset="100%" stop-color="#00e5a0" stop-opacity="0"/>
+                                </linearGradient>
+                            </defs>
+                            <polygon id="chart-area" fill="url(#chartGrad)" points=""/>
+                            <polyline id="history-line" fill="none" stroke="#00e5a0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points=""/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- History -->
+        <div class="page" id="page-history">
+            <div class="topbar">
+                <div>
+                    <div class="topbar-title">History</div>
+                    <div class="topbar-sub">Daily OHLCV data</div>
+                </div>
+            </div>
+            <div class="search-row">
+                <div class="search-input-wrap">
+                    <span class="search-ticker">TICKER</span>
+                    <input id="hist-symbol" class="search-input" type="text" maxlength="10" placeholder="AAPL" autocomplete="off">
+                </div>
+                <button class="btn btn-primary" id="hist-load-btn">Load history</button>
+            </div>
+            <div class="status" id="hist-status">
+                <span class="status-dot"></span>Enter a ticker to view daily history.
+            </div>
+            <div class="content" style="padding-top:0; gap:0;">
+                <div class="panel" style="border-radius:0; border-left:none; border-right:none; border-top:none;">
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Open</th>
+                                <th>Close</th>
+                                <th>High</th>
+                                <th>Low</th>
+                                <th>Volume</th>
+                            </tr>
+                            </thead>
+                            <tbody id="history-table">
+                            <tr><td class="empty-row" colspan="6">No history loaded.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overview -->
+        <div class="page" id="page-overview">
+            <div class="topbar">
+                <div>
+                    <div class="topbar-title">Overview</div>
+                    <div class="topbar-sub">Company fundamentals</div>
+                </div>
+            </div>
+            <div class="search-row">
+                <div class="search-input-wrap">
+                    <span class="search-ticker">TICKER</span>
+                    <input id="ov-symbol" class="search-input" type="text" maxlength="10" placeholder="AAPL" autocomplete="off">
+                </div>
+                <button class="btn btn-primary" id="ov-load-btn">Load overview</button>
+            </div>
+            <div class="status" id="ov-status">
+                <span class="status-dot"></span>Enter a ticker to load company info.
+            </div>
+            <div class="content">
+                <div class="two-col">
+                    <div class="panel">
+                        <div class="panel-head">
+                            <div>
+                                <div class="panel-title" id="ov-name">Waiting for symbol</div>
+                                <div class="panel-sub" id="ov-sector">—</div>
+                            </div>
+                            <span class="badge green" id="ov-asset">—</span>
+                        </div>
+                        <div class="panel-body">
+                            <p class="overview-desc" id="ov-desc">Company description will appear here after loading a symbol.</p>
+                            <div class="facts">
+                                <div class="fact">
+                                    <dt>Industry</dt>
+                                    <dd id="ov-industry">—</dd>
+                                </div>
+                                <div class="fact-divider"></div>
+                                <div class="fact">
+                                    <dt>Market cap</dt>
+                                    <dd id="ov-mktcap">—</dd>
+                                </div>
+                                <div class="fact-divider"></div>
+                                <div class="fact">
+                                    <dt>Dividend yield</dt>
+                                    <dd id="ov-div-yield">—</dd>
+                                </div>
+                                <div class="fact-divider"></div>
+                                <div class="fact">
+                                    <dt>Dividend date</dt>
+                                    <dd id="ov-div-date">—</dd>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:16px;">
+                        <div class="panel">
+                            <div class="panel-head"><div class="panel-title">Quick stats</div></div>
+                            <div class="panel-body">
+                                <div class="facts">
+                                    <div class="fact"><dt>Symbol</dt><dd id="ov-sym-stat">—</dd></div>
+                                    <div class="fact-divider"></div>
+                                    <div class="fact"><dt>Sector</dt><dd id="ov-sector-stat">—</dd></div>
+                                    <div class="fact-divider"></div>
+                                    <div class="fact"><dt>Asset type</dt><dd id="ov-asset-stat">—</dd></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Favorites -->
+        <div class="page" id="page-favorites">
+            <div class="topbar">
+                <div>
+                    <div class="topbar-title">Favorites</div>
+                    <div class="topbar-sub">Your saved watchlist</div>
+                </div>
+                <div class="topbar-actions">
+                    <button class="btn btn-ghost" id="fav-refresh-btn">↻ Refresh</button>
+                </div>
+            </div>
+            <div class="fav-add-row">
+                <div class="search-input-wrap">
+                    <span class="search-ticker">TICKER</span>
+                    <input id="fav-symbol" class="search-input" type="text" maxlength="10" placeholder="MSFT" autocomplete="off">
+                </div>
+                <button class="btn btn-primary" id="fav-save-btn">+ Add favorite</button>
+            </div>
+            <div class="status" id="fav-status">
+                <span class="status-dot"></span>Loading your favorites…
+            </div>
+            <div class="content">
+                <div class="fav-grid" id="favorites-list">
+                    <div class="fav-empty">
+                        <h3>No favorites yet</h3>
+                        <p>Add a ticker symbol above to build your watchlist.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /main -->
+</div><!-- /app -->
+
+<script src="app.js"></script>
+</body>
+</html>
